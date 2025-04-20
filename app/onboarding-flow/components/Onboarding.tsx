@@ -3,8 +3,7 @@ import { Lightbulb, Mouse, SquareCheck, Target } from "lucide-react";
 import React, { useState } from "react";
 import ProgressBar from "./ProgressBar";
 import { cn } from "@/lib/utils";
-import { AnimatePresence } from "motion/react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 
 export const onboardingSteps = [
   {
@@ -42,63 +41,83 @@ export const onboardingSteps = [
 
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
-  const handleNext = () => {
+  const [direction, setDirection] = useState<number>(1);
+
+  const handleNext = (newDirection: number) => {
     if (currentStep + 1 < 4) {
-      setCurrentStep((prev) => prev + 1);
+      setDirection(newDirection);
+      setCurrentStep((prev) => prev + newDirection);
     }
   };
-  const handlePrev = () => {
+  const handlePrev = (newDirection: number) => {
     if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
+      setDirection(newDirection);
+      setCurrentStep((prev) => prev + newDirection);
     }
   };
 
   const cardVariants = {
-    visible: {
+    enter: (direction: number) => {
+      return {
+        x: direction > 0 ? 200 : -200,
+        opacity: 0,
+        filter: "blur(10px)",
+      };
+    },
+    center: {
+      x: 0,
       opacity: 1,
       filter: "blur(0px)",
     },
-    hidden: {
-      opacity: 0,
-      filter: "blur(10px)",
+    exit: (direction: number) => {
+      return {
+        x: direction < 0 ? 200 : -200,
+        opacity: 0,
+        filter: "blur(10px)",
+      };
     },
   };
+
+  const background = `${onboardingSteps[currentStep].bgColor}`;
   return (
     <div className="w-full h-full flex flex-col justify-center items-center ">
       <ProgressBar currentStep={currentStep} steps={4} />
 
-      <AnimatePresence>
-        {onboardingSteps.map((step, index) => (
-          <motion.div
-            key={step.id}
-            variants={cardVariants}
-            exit={"hidden"}
-            animate={"visible"}
-            transition={{ duration: 1, ease: "easeInOut" }}
-            className={cn(
-              " w-80 h-100 mt-5 p-4 flex flex-col",
-            //   `${index !== currentStep && "hidden"}`
-            )}
-            style={{ background: `${step.bgColor}` }}
-          >
-            <h1 className="flex justify-start items-center gap-2 text-xl font-semibold">
-              <span>{step.icon}</span> <span>{step.title}</span>
-            </h1>
-            <div className="w-full h-full flex justify-center items-center text-center font-medium text-lg">
-              <p>{step.description}</p>
-            </div>
-          </motion.div>
-        ))}
+      <AnimatePresence custom={direction} mode="wait">
+        <motion.div
+          key={onboardingSteps[currentStep].id}
+          variants={cardVariants}
+          custom={direction}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{
+            type: "spring",
+            stiffness: 400, // Higher = faster, snappier
+            damping: 25, // Higher = less bouncy
+            mass: 0.8, // Lower = less inertia
+          }}
+          className={cn(" w-80 h-100 mt-5 p-4 flex flex-col")}
+          style={{ background }}
+        >
+          <h1 className="flex justify-start items-center gap-2 text-xl font-semibold">
+            <span>{onboardingSteps[currentStep].icon}</span>{" "}
+            <span>{onboardingSteps[currentStep].title}</span>
+          </h1>
+          <div className="w-full h-full flex justify-center items-center text-center font-medium text-lg">
+            <p>{onboardingSteps[currentStep].description}</p>
+          </div>
+        </motion.div>
       </AnimatePresence>
       <div className="flex justify-end items-center gap-2 absolute bottom-0 right-10">
         <button
-          onClick={handlePrev}
+          onClick={() => handlePrev(-1)}
           className="bg-blue-500 text-white px-4 py-2 rounded-lg"
         >
           Previous
         </button>
         <button
-          onClick={handleNext}
+          onClick={() => handleNext(1)}
           className="bg-blue-500 text-white px-4 py-2 rounded-lg"
         >
           Next
