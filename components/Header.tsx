@@ -19,6 +19,10 @@ const tabs = [
     text: "Weekly-Challenge",
     link: "/",
   },
+  {
+    text: "gesture-practice",
+    link: "/gesture-practice",
+  },
 ];
 
 const Header = () => {
@@ -33,12 +37,12 @@ const Header = () => {
   useEffect(() => {
     const tab = getActiveTab();
     setSelectedTab(tab);
-    setHoveredTab(tab.text);
+    // setHoveredTab(tab.text);
   }, [pathname]);
   return (
     <nav
       className={cn(
-        "w-full md:max-w-5xl bg-white flex justify-center items-center mx-auto py-5 px-5"
+        "w-full md:max-w-5xl bg-black flex justify-center items-center mx-auto py-5 px-5"
       )}
     >
       <motion.ul className="flex justify-center items-center relative border px-5 md:px-20  rounded-xl w-fit">
